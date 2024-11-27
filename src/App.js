@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import cors from "cors";
 
 function App() {
   const [url, setUrl] = useState("");
@@ -33,20 +34,59 @@ function App() {
 
     return true;
   };
+  // const handleDownload = async (id) => {
+  //   const url = `https://tikcdn.io/ssstik/${id}`; // Replace with your API endpoint
+
+  //   try {
+  //     const response = await fetch(url, {
+  //       method: "GET", // Change to "POST", "PUT", etc., as needed
+  //       headers: {
+  //         "Content-Type": "application/json", // Adjust headers if needed
+  //       },
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+  //     console.log("Response data:", data); // Handle response data
+  //   } catch (error) {
+  //     console.error("Request failed:", error);
+  //   }
+  // };
+  
+  let downloadUrl ;
+
+
 
   const handleSubmit = async () => {
     if (!validateUrlAndPlatform(url, platform)) {
       return;
     }
-
+    
     setError(null);
     setResponse(null);
     setLoading(true); // Set loading to true when starting the request
-
+    
     try {
-      const res = await axios.get("http://localhost:5000/scrape", {
+      const res = await axios.get(`http://localhost:8000/scrape`, {
         params: { url, platform },
       });
+      downloadUrl = `https://tikcdn.io/ssstik/${res.data.id}`;
+      console.log(downloadUrl);
+      console.log("Hello from downloadVideo function",downloadUrl);
+    let a = document.createElement('a');
+    document.body.appendChild(a)
+    a.style.display = 'none';
+    a.href = downloadUrl;
+    a.target = '_blank';
+    a.download = 'new file';
+    console.log("checking value of a",a);
+    
+    a.click();
+    console.log("hello from a",a);
+
       setResponse(res.data.videoData);
     } catch (err) {
       setError(err.response?.data?.error || "Something went wrong");
@@ -54,6 +94,8 @@ function App() {
       setLoading(false); // Set loading to false once the request is complete
     }
   };
+
+ 
 
   const handlePlatformSelect = (selectedPlatform) => {
     setPlatform(selectedPlatform);
@@ -149,6 +191,20 @@ function App() {
               <strong>Follower:</strong> {response.follower}
             </p>
           )}
+          <p>
+            {response.likes && (<span>{response.likes},</span>)}
+            {response.comments && (<span>{response.comments},</span>)}
+            {response.shares && (<span>{response.shares},</span>)}
+            {response.bookmark && (<span>{response.bookmark},</span>)}
+            {response.channelName && (<span>{response.channelName},</span>)}
+            {response.description && (<span>{response.description},</span>)}
+            {response.title && (<span>{response.title},</span>)}
+            {response.views && (<span>{response.views},</span>)}
+            {response.date && (<span>{response.date},</span>)}
+            {response.subscribers && (<span>{response.subscribers},</span>)}
+            {response.follower && (<span>{response.follower},</span>)}
+            
+            </p>
           {response.thumbnail && (
             <div>
               <strong>Thumbnail:</strong>
@@ -163,6 +219,7 @@ function App() {
               />
             </div>
           )}
+          
 
           <a
             href={response.videoUrl}
@@ -276,6 +333,18 @@ const styles = {
     fontSize: "14px",
     marginTop: "10px",
   },
+  downloadButton: {
+    padding: "10px 20px",
+    backgroundColor: "#008CBA",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "16px",
+    width: "100%",
+    marginTop: "20px",
+  },
+
   // Adding CSS for spinner animation
   "@keyframes spin": {
     from: { transform: "rotate(0deg)" },
